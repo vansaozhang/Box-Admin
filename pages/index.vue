@@ -104,6 +104,11 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  middleware: 'auth',
+  layout: 'default',
+})
+
 const stats = [
   {
     label: 'Total Users',
@@ -181,140 +186,3 @@ const capacityItems = [
   { label: 'Marketing', value: 52, color: 'amber' },
 ]
 </script>
-
-<style scoped>
-.hero-card {
-  overflow: hidden;
-  background:
-    linear-gradient(135deg, rgba(15, 118, 110, 0.94), rgba(29, 78, 216, 0.92)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0));
-  color: #f8fafc;
-  box-shadow: 0 20px 45px rgba(15, 118, 110, 0.22);
-}
-
-.hero-eyebrow {
-  margin: 0;
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(241, 245, 249, 0.8);
-}
-
-.hero-title {
-  margin: 12px 0 0;
-  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
-  font-size: clamp(1.55rem, 2.3vw, 2.1rem);
-  line-height: 1.24;
-  max-width: 18ch;
-}
-
-.hero-subtitle {
-  margin: 12px 0 0;
-  max-width: 52ch;
-  color: rgba(241, 245, 249, 0.88);
-  font-size: 0.95rem;
-}
-
-.uptime-panel {
-  border: 1px solid rgba(241, 245, 249, 0.28);
-  background: rgba(15, 23, 42, 0.18);
-  backdrop-filter: blur(6px);
-}
-
-.uptime-label {
-  margin: 0;
-  color: rgba(226, 232, 240, 0.9);
-  font-size: 0.82rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.uptime-value {
-  margin: 8px 0 0;
-  font-size: 2rem;
-  line-height: 1;
-  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
-}
-
-.uptime-note {
-  margin: 0;
-  color: rgba(226, 232, 240, 0.82);
-  font-size: 0.82rem;
-}
-
-.metric-card,
-.panel-card {
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(7px);
-  transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
-}
-
-.metric-card:hover,
-.panel-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(59, 130, 246, 0.3);
-  box-shadow: 0 12px 30px rgba(148, 163, 184, 0.2);
-}
-
-.metric-label {
-  margin: 0;
-  color: #64748b;
-  font-size: 0.83rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.metric-value {
-  margin: 8px 0 0;
-  color: #0f172a;
-  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.55rem;
-}
-
-.metric-note {
-  margin: 10px 0 0;
-  color: #64748b;
-  font-size: 0.83rem;
-}
-
-.activity-item {
-  min-height: 70px;
-}
-
-.activity-title {
-  color: #0f172a;
-  font-weight: 600;
-  font-size: 0.92rem;
-}
-
-.activity-subtitle {
-  color: #64748b;
-  font-size: 0.82rem;
-}
-
-.activity-time {
-  color: #64748b;
-  font-size: 0.76rem;
-  white-space: nowrap;
-}
-
-.capacity-row {
-  margin-bottom: 20px;
-}
-
-.capacity-row:last-child {
-  margin-bottom: 6px;
-}
-
-.capacity-label {
-  color: #334155;
-  font-size: 0.86rem;
-}
-
-.capacity-value {
-  color: #0f172a;
-  font-size: 0.82rem;
-  font-weight: 600;
-}
-</style>

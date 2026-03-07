@@ -56,6 +56,11 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  middleware: 'auth',
+  layout: 'default',
+})
+
 const roles = [
   {
     name: 'Admin',
@@ -83,67 +88,3 @@ const roles = [
   },
 ]
 </script>
-
-<style scoped>
-.hero-card,
-.roles-table-card {
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(7px);
-}
-
-.hero-content {
-  padding: 18px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.hero-eyebrow {
-  margin: 0;
-  color: #64748b;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.hero-title {
-  margin: 6px 0 0;
-  color: #0f172a;
-  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.35rem;
-}
-
-.hero-subtitle {
-  margin: 8px 0 0;
-  color: #64748b;
-  font-size: 0.86rem;
-}
-
-.roles-table :deep(thead th) {
-  color: #64748b;
-  font-size: 0.78rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.role-cell {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.role-name {
-  color: #0f172a;
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
-.role-description,
-.role-updated {
-  color: #475569;
-  font-size: 0.84rem;
-}
-</style>

@@ -155,6 +155,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
+definePageMeta({
+  middleware: 'auth',
+  layout: 'default',
+})
+
 const general = ref({
   siteName: 'Box Admin Workspace',
   siteUrl: 'https://admin.box.com',
@@ -169,95 +174,3 @@ const notifications = ref({
   sms: false,
 })
 </script>
-
-<style scoped>
-.intro-card,
-.settings-card {
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(7px);
-}
-
-.settings-grid {
-  row-gap: 2px;
-}
-
-.intro-content {
-  padding: 22px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.intro-eyebrow {
-  margin: 0;
-  color: #64748b;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.intro-title {
-  margin: 9px 0 0;
-  color: #0f172a;
-  font-family: 'Sora', 'Plus Jakarta Sans', sans-serif;
-  font-size: clamp(1.15rem, 2.2vw, 1.38rem);
-  max-width: 34ch;
-}
-
-.intro-subtitle {
-  margin: 8px 0 0;
-  color: #64748b;
-  font-size: 0.88rem;
-}
-
-.general-card :deep(.v-card-item),
-.side-card :deep(.v-card-item) {
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
-}
-
-.general-card :deep(.v-field),
-.general-card :deep(.v-input__details) {
-  font-size: 0.9rem;
-}
-
-.switch-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
-}
-
-.switch-row:last-child {
-  border-bottom: 0;
-}
-
-.switch-title {
-  margin: 0;
-  color: #0f172a;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.switch-subtitle {
-  margin: 3px 0 0;
-  color: #64748b;
-  font-size: 0.8rem;
-}
-
-.security-list :deep(.v-list-item) {
-  padding-left: 0;
-  padding-right: 0;
-}
-
-@media (max-width: 960px) {
-  .intro-content {
-    padding: 16px 16px;
-  }
-}
-</style>
