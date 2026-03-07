@@ -6,6 +6,8 @@ interface User {
   name: string
   username?: string
   role?: string
+  status?: string
+  permissions?: string[]
 }
 
 interface LoginCredentials {
@@ -24,6 +26,7 @@ interface AuthResponse {
   access_token: string
   refresh_token?: string
   user: User
+  permissions?: string[]
 }
 
 const AUTH_TOKEN_KEY = 'auth_token'
@@ -125,6 +128,18 @@ const readErrorMessage = async (response: Response, fallbackMessage: string) => 
   }
 }
 
+const normalizeUser = (response: AuthResponse, fallbackUser?: User | null): User | null => {
+  if (!response.user && !fallbackUser) {
+    return null
+  }
+
+  return {
+    ...(fallbackUser ?? {}),
+    ...(response.user ?? {}),
+    permissions: response.user?.permissions ?? response.permissions ?? fallbackUser?.permissions ?? [],
+  } as User
+}
+
 export const useAuth = () => {
   const runtimeConfig = useRuntimeConfig()
   const apiBaseUrl = runtimeConfig.public.apiBase as string
@@ -218,7 +233,7 @@ export const useAuth = () => {
       }
 
       const data: AuthResponse = await response.json()
-      setSession(data.access_token, data.refresh_token ?? null, data.user)
+      setSession(data.access_token, data.refresh_token ?? null, normalizeUser(data))
       initialized.value = true
 
       return { success: true }
@@ -248,7 +263,7 @@ export const useAuth = () => {
       }
 
       const data: AuthResponse = await response.json()
-      setSession(data.access_token, data.refresh_token ?? null, data.user)
+      setSession(data.access_token, data.refresh_token ?? null, normalizeUser(data))
       initialized.value = true
 
       return { success: true }
@@ -294,7 +309,7 @@ export const useAuth = () => {
       setSession(
         data.access_token,
         data.refresh_token ?? refreshToken.value,
-        data.user ?? user.value,
+        normalizeUser(data, user.value),
       )
       error.value = null
       initialized.value = true

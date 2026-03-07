@@ -8,23 +8,57 @@
           <p class="header-subtitle">Configure module-level permissions for each role.</p>
         </div>
         <v-select
-          v-model="selectedRole"
+          v-model="selectedRoleId"
           :items="roles"
+          item-title="name"
+          item-value="id"
           label="Role"
           density="compact"
           class="role-select"
-        ></v-select>
+          hide-details
+        />
       </div>
     </v-card>
 
+    <v-alert
+      v-if="error"
+      type="error"
+      variant="tonal"
+      class="mb-4"
+      closable
+      @click:close="error = ''"
+    >
+      {{ error }}
+    </v-alert>
+
+    <v-alert
+      v-if="success"
+      type="success"
+      variant="tonal"
+      class="mb-4"
+      closable
+      @click:close="success = ''"
+    >
+      {{ success }}
+    </v-alert>
+
     <v-card class="permission-card">
+      <v-progress-linear v-if="loading" indeterminate color="primary" />
+
       <v-card-text class="pa-5">
-        <v-row>
-          <v-col v-for="section in permissionSections" :key="section.name" cols="12" md="6">
+        <v-row v-if="permissionSections.length > 0">
+          <v-col
+            v-for="section in permissionSections"
+            :key="section.name"
+            cols="12"
+            md="6"
+          >
             <v-sheet class="permission-section pa-4" rounded="md">
               <div class="d-flex align-center justify-space-between mb-3">
                 <h3 class="section-title">{{ section.name }}</h3>
-                <v-chip color="primary" variant="tonal">{{ section.items.length }} controls</v-chip>
+                <v-chip color="primary" variant="tonal">
+                  {{ section.items.length }} controls
+                </v-chip>
               </div>
 
               <v-checkbox
@@ -37,86 +71,211 @@
                 density="compact"
                 hide-details
                 class="permission-checkbox"
-              ></v-checkbox>
+              />
             </v-sheet>
           </v-col>
         </v-row>
+
+        <v-alert
+          v-else
+          type="info"
+          variant="tonal"
+        >
+          No permission catalog is available yet.
+        </v-alert>
       </v-card-text>
 
-      <v-divider></v-divider>
+      <v-divider />
+
       <v-card-actions class="px-5 py-4">
         <div class="text-caption text-medium-emphasis">
-          {{ assignedPermissions.length }} permission(s) selected for {{ selectedRole }}
+          {{ assignedPermissions.length }} permission(s) selected for {{ selectedRoleName }}
         </div>
-        <v-spacer></v-spacer>
-        <v-btn variant="tonal" color="secondary">Reset</v-btn>
-        <v-btn color="primary" prepend-icon="mdi-content-save-outline">Save permissions</v-btn>
+        <v-spacer />
+        <v-btn variant="tonal" color="secondary" @click="resetPermissions">
+          Reset
+        </v-btn>
+        <v-btn
+          color="primary"
+          prepend-icon="mdi-content-save-outline"
+          :loading="saving"
+          :disabled="!selectedRoleId"
+          @click="savePermissions"
+        >
+          Save permissions
+        </v-btn>
       </v-card-actions>
     </v-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 definePageMeta({
   middleware: 'auth',
   layout: 'default',
 })
 
-const route = useRoute()
+interface RoleItem {
+  id: string
+  name: string
+}
 
-const roles = ['Admin', 'Moderator', 'User']
-const selectedRole = ref(
-  typeof route.query.role === 'string' && roles.includes(route.query.role) ? route.query.role : 'Moderator'
+interface RolesResponse {
+  items: RoleItem[]
+}
+
+interface PermissionItem {
+  id: string
+  key: string
+  label: string
+  group: string
+  description?: string
+}
+
+interface PermissionCatalogResponse {
+  sections: Array<{
+    name: string
+    items: PermissionItem[]
+  }>
+}
+
+interface RolePermissionsResponse {
+  assigned_permission_keys: string[]
+}
+
+const route = useRoute()
+const router = useRouter()
+const { send } = useAdminApi()
+
+const roles = ref<RoleItem[]>([])
+const selectedRoleId = ref('')
+const permissionSections = ref<PermissionCatalogResponse['sections']>([])
+const assignedPermissions = ref<string[]>([])
+const savedPermissions = ref<string[]>([])
+const loading = ref(false)
+const saving = ref(false)
+const error = ref('')
+const success = ref('')
+
+const selectedRoleName = computed(
+  () => roles.value.find((role) => role.id === selectedRoleId.value)?.name ?? 'this role',
 )
 
-const permissionSections = [
-  {
-    name: 'User Management',
-    items: [
-      { key: 'users.view', label: 'View users' },
-      { key: 'users.create', label: 'Create users' },
-      { key: 'users.edit', label: 'Edit users' },
-      { key: 'users.delete', label: 'Delete users' },
-    ],
-  },
-  {
-    name: 'Security',
-    items: [
-      { key: 'security.roles.view', label: 'View roles' },
-      { key: 'security.roles.manage', label: 'Manage roles' },
-      { key: 'security.permissions.assign', label: 'Assign permissions' },
-      { key: 'security.audit.view', label: 'View audit log' },
-    ],
-  },
-  {
-    name: 'Orders & Documents',
-    items: [
-      { key: 'orders.view', label: 'View orders' },
-      { key: 'orders.approve', label: 'Approve orders' },
-      { key: 'documents.upload', label: 'Upload documents' },
-      { key: 'documents.delete', label: 'Delete documents' },
-    ],
-  },
-  {
-    name: 'System Settings',
-    items: [
-      { key: 'settings.view', label: 'View settings' },
-      { key: 'settings.edit', label: 'Edit settings' },
-      { key: 'notifications.manage', label: 'Manage notifications' },
-      { key: 'security.policy.edit', label: 'Edit security policy' },
-    ],
-  },
-]
+const syncRoute = async () => {
+  if (!selectedRoleId.value) {
+    return
+  }
 
-const assignedPermissions = ref([
-  'users.view',
-  'users.edit',
-  'security.roles.view',
-  'security.permissions.assign',
-  'orders.view',
-  'settings.view',
-])
+  await router.replace({
+    query: {
+      ...route.query,
+      roleId: selectedRoleId.value,
+      role: selectedRoleName.value,
+    },
+  })
+}
+
+const fetchCatalog = async () => {
+  const response = await send<PermissionCatalogResponse>('/permissions/catalog')
+  permissionSections.value = response.sections
+}
+
+const fetchRoles = async () => {
+  const response = await send<RolesResponse>('/roles')
+  roles.value = response.items
+
+  const queryRoleId =
+    typeof route.query.roleId === 'string' ? route.query.roleId : ''
+  const queryRoleName =
+    typeof route.query.role === 'string' ? route.query.role : ''
+
+  if (queryRoleId && roles.value.some((role) => role.id === queryRoleId)) {
+    selectedRoleId.value = queryRoleId
+    return
+  }
+
+  if (queryRoleName) {
+    const matchedRole = roles.value.find((role) => role.name === queryRoleName)
+    if (matchedRole) {
+      selectedRoleId.value = matchedRole.id
+      return
+    }
+  }
+
+  selectedRoleId.value = roles.value[0]?.id ?? ''
+}
+
+const fetchRolePermissions = async () => {
+  if (!selectedRoleId.value) {
+    assignedPermissions.value = []
+    savedPermissions.value = []
+    return
+  }
+
+  loading.value = true
+  error.value = ''
+
+  try {
+    const response = await send<RolePermissionsResponse>(
+      `/roles/${selectedRoleId.value}/permissions`,
+    )
+    assignedPermissions.value = [...response.assigned_permission_keys]
+    savedPermissions.value = [...response.assigned_permission_keys]
+    await syncRoute()
+  } catch (err: any) {
+    error.value = err.message || 'Failed to load role permissions'
+  } finally {
+    loading.value = false
+  }
+}
+
+const resetPermissions = () => {
+  assignedPermissions.value = [...savedPermissions.value]
+  success.value = ''
+}
+
+const savePermissions = async () => {
+  if (!selectedRoleId.value) {
+    return
+  }
+
+  saving.value = true
+  success.value = ''
+
+  try {
+    await send(`/roles/${selectedRoleId.value}/permissions`, {
+      method: 'POST',
+      body: JSON.stringify({
+        permission_keys: assignedPermissions.value,
+      }),
+    })
+
+    savedPermissions.value = [...assignedPermissions.value]
+    success.value = `Permissions updated for ${selectedRoleName.value}.`
+  } catch (err: any) {
+    error.value = err.message || 'Failed to save permissions'
+  } finally {
+    saving.value = false
+  }
+}
+
+watch(selectedRoleId, (nextRoleId, previousRoleId) => {
+  if (nextRoleId === previousRoleId) {
+    return
+  }
+
+  success.value = ''
+  fetchRolePermissions()
+})
+
+onMounted(async () => {
+  try {
+    await Promise.all([fetchCatalog(), fetchRoles()])
+  } catch (err: any) {
+    error.value = err.message || 'Failed to load permission management'
+  }
+})
 </script>
