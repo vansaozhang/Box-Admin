@@ -84,10 +84,7 @@
             <td>
               <div class="d-flex flex-wrap ga-2">
                 <v-btn
-                  :to="{
-                    path: '/security/role-permissions',
-                    query: { roleId: role.id, role: role.name },
-                  }"
+                  to="/security/role-permissions"
                   size="small"
                   variant="tonal"
                   color="secondary"

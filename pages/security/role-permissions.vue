@@ -13,6 +13,8 @@
           item-title="name"
           item-value="id"
           label="Role"
+          placeholder="Select a role"
+          clearable
           density="compact"
           class="role-select"
           hide-details
@@ -46,7 +48,15 @@
       <v-progress-linear v-if="loading" indeterminate color="primary" />
 
       <v-card-text class="pa-5">
-        <v-row v-if="permissionSections.length > 0">
+        <v-alert
+          v-if="!selectedRoleId"
+          type="info"
+          variant="tonal"
+        >
+          Select a role to view and update its permissions.
+        </v-alert>
+
+        <v-row v-else-if="permissionSections.length > 0">
           <v-col
             v-for="section in permissionSections"
             :key="section.name"
@@ -89,10 +99,15 @@
 
       <v-card-actions class="px-5 py-4">
         <div class="text-caption text-medium-emphasis">
-          {{ assignedPermissions.length }} permission(s) selected for {{ selectedRoleName }}
+          {{ selectionSummary }}
         </div>
         <v-spacer />
-        <v-btn variant="tonal" color="secondary" @click="resetPermissions">
+        <v-btn
+          variant="tonal"
+          color="secondary"
+          :disabled="!selectedRoleId"
+          @click="resetPermissions"
+        >
           Reset
         </v-btn>
         <v-btn
@@ -111,7 +126,6 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 
 definePageMeta({
   middleware: 'auth',
@@ -146,8 +160,6 @@ interface RolePermissionsResponse {
   assigned_permission_keys: string[]
 }
 
-const route = useRoute()
-const router = useRouter()
 const { send } = useAdminApi()
 
 const roles = ref<RoleItem[]>([])
@@ -164,19 +176,13 @@ const selectedRoleName = computed(
   () => roles.value.find((role) => role.id === selectedRoleId.value)?.name ?? 'this role',
 )
 
-const syncRoute = async () => {
+const selectionSummary = computed(() => {
   if (!selectedRoleId.value) {
-    return
+    return 'Select a role to manage permissions'
   }
 
-  await router.replace({
-    query: {
-      ...route.query,
-      roleId: selectedRoleId.value,
-      role: selectedRoleName.value,
-    },
-  })
-}
+  return `${assignedPermissions.value.length} permission(s) selected for ${selectedRoleName.value}`
+})
 
 const fetchCatalog = async () => {
   const response = await send<PermissionCatalogResponse>('/permissions/catalog')
@@ -186,26 +192,6 @@ const fetchCatalog = async () => {
 const fetchRoles = async () => {
   const response = await send<RolesResponse>('/roles')
   roles.value = response.items
-
-  const queryRoleId =
-    typeof route.query.roleId === 'string' ? route.query.roleId : ''
-  const queryRoleName =
-    typeof route.query.role === 'string' ? route.query.role : ''
-
-  if (queryRoleId && roles.value.some((role) => role.id === queryRoleId)) {
-    selectedRoleId.value = queryRoleId
-    return
-  }
-
-  if (queryRoleName) {
-    const matchedRole = roles.value.find((role) => role.name === queryRoleName)
-    if (matchedRole) {
-      selectedRoleId.value = matchedRole.id
-      return
-    }
-  }
-
-  selectedRoleId.value = roles.value[0]?.id ?? ''
 }
 
 const fetchRolePermissions = async () => {
@@ -224,7 +210,6 @@ const fetchRolePermissions = async () => {
     )
     assignedPermissions.value = [...response.assigned_permission_keys]
     savedPermissions.value = [...response.assigned_permission_keys]
-    await syncRoute()
   } catch (err: any) {
     error.value = err.message || 'Failed to load role permissions'
   } finally {
