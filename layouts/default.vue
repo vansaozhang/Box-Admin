@@ -94,14 +94,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify'
 
 const route = useRoute()
 const router = useRouter()
 const display = useDisplay()
-const isMobile = computed(() => display.mdAndDown.value)
+const hasMounted = ref(false)
+const isMobile = computed(() => hasMounted.value ? display.mdAndDown.value : false)
 const drawer = ref(false)
 const openedGroups = ref<string[]>([])
 
@@ -167,6 +168,10 @@ const pageMeta: Record<string, { title: string; subtitle: string }> = {
 
 const pageTitle = computed(() => pageMeta[route.path]?.title ?? 'Box Admin')
 const pageSubtitle = computed(() => pageMeta[route.path]?.subtitle ?? 'Workspace overview')
+
+onMounted(() => {
+  hasMounted.value = true
+})
 
 watch(
   () => isMobile.value,
