@@ -72,7 +72,13 @@
             <td>
               <div class="name-cell">
                 <v-avatar size="34" :color="getAvatarColor(user.role)" rounded="md">
-                  <span class="avatar-initials">{{ getInitials(user.name) }}</span>
+                  <v-img
+                    v-if="user.profile_image_url"
+                    :src="user.profile_image_url"
+                    :alt="`${user.name} profile photo`"
+                    cover
+                  />
+                  <span v-else class="avatar-initials">{{ getInitials(user.name) }}</span>
                 </v-avatar>
                 <div>
                   <p class="user-name">{{ user.name }}</p>
@@ -227,6 +233,7 @@ interface UserItem {
   phone_number?: string | null
   role: string
   status: 'Active' | 'Inactive'
+  profile_image_url?: string | null
   created_at?: string
   updated_at?: string
 }

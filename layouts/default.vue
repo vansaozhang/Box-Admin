@@ -52,15 +52,6 @@
 
           <v-spacer></v-spacer>
 
-          <v-badge dot color="error" offset-x="8" offset-y="8">
-            <v-btn icon variant="text" class="topbar-icon-btn" aria-label="Notifications">
-              <v-icon>mdi-bell-outline</v-icon>
-            </v-btn>
-          </v-badge>
-          <v-btn icon variant="text" class="topbar-icon-btn ml-1" aria-label="Settings">
-            <v-icon>mdi-cog-outline</v-icon>
-          </v-btn>
-
           <v-menu offset-y min-width="200">
             <template #activator="{ props }">
               <v-btn v-bind="props" variant="text" class="ml-2 px-2 user-menu-trigger">
@@ -154,6 +145,10 @@ const handleLogout = () => {
 
 const pageMeta: Record<string, { title: string; subtitle: string }> = {
   '/': { title: 'Dashboard', subtitle: 'Monitor platform performance and activity' },
+  '/plans': { title: 'Plans', subtitle: 'Manage box variants, cadences, and pricing' },
+  '/subscriptions': { title: 'Subscriptions', subtitle: 'Review subscriber plans and lifecycle status' },
+  '/shipments': { title: 'Shipments', subtitle: 'Track fulfillment progress and shipment updates' },
+  '/payments': { title: 'Payments', subtitle: 'Monitor billing outcomes and payment records' },
   '/users': { title: 'Users', subtitle: 'Manage access, roles, and account status' },
   '/security/users-roles': {
     title: 'Users Roles',
@@ -163,7 +158,6 @@ const pageMeta: Record<string, { title: string; subtitle: string }> = {
     title: 'Role Permissions',
     subtitle: 'Assign granular permissions by role',
   },
-  '/settings': { title: 'Settings', subtitle: 'Tune workspace preferences and notifications' },
 }
 
 const pageTitle = computed(() => pageMeta[route.path]?.title ?? 'Box Admin')

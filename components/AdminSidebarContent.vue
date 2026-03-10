@@ -62,13 +62,6 @@
         ></v-list-item>
       </v-list-group>
 
-      <v-list-item
-        to="/settings"
-        prepend-icon="mdi-cog-outline"
-        title="Settings"
-        rounded="lg"
-        class="nav-item mb-1"
-      ></v-list-item>
     </v-list>
 
     <div class="drawer-footer pa-4">
@@ -106,6 +99,10 @@ const route = useRoute()
 
 const navItems = [
   { title: 'Dashboard', icon: 'mdi-view-dashboard-outline', to: '/' },
+  { title: 'Plans', icon: 'mdi-package-variant-closed', to: '/plans' },
+  { title: 'Subscriptions', icon: 'mdi-repeat', to: '/subscriptions' },
+  { title: 'Shipments', icon: 'mdi-truck-outline', to: '/shipments' },
+  { title: 'Payments', icon: 'mdi-cash-multiple', to: '/payments' },
 ]
 
 const localOpenedGroups = computed({
