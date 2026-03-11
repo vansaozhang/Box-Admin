@@ -37,7 +37,10 @@ export default defineNuxtConfig({
   // Runtime config for API URL
   runtimeConfig: {
     public: {
-      apiBase: process.env.API_BASE_URL || 'https://subscription-backend-528466251837.us-central1.run.app/api',
+      apiBase:
+        process.env.NUXT_PUBLIC_API_BASE ||
+        process.env.API_BASE_URL ||
+        'https://subscription-backend-528466251837.us-central1.run.app/api',
     },
   },
 })
